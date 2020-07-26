@@ -140,3 +140,46 @@ exports.resetPassword = (req, res) => {
       });
     });
 };
+
+exports.siginInWithGoogle = (req, res) => {
+  var provider = new firebase.auth.GoogleAuthProvider;
+  let token, userId, userName, email, createdAt;
+  firebase
+    .auth()
+    .signInWithPopup(provider)
+    .then((res) => {
+      token = res.credential.accessToken;
+      var userCredentials = {
+        userName: res.user.displayName,
+        email: res.user.email,
+        createdAt: new Date().toISOString(),
+        userId: res.user.getIdToken,
+        verified: res.user.emailVerified,
+      };
+      return db
+        .doc(`/users/${userName}`)
+        .set(userCredentials)
+        .then(() => {
+          return res.status(200).json({
+            token,
+          });
+        })
+        .catch((err) => {
+          console.log(err);
+          if (err.code === "auth/email-already-in-use") {
+            return res.status(400).json({
+              emailError: "Email already in use.",
+            });
+          }
+          if (err.code === "auth/network-request-failed") {
+            return res.status(400).json({
+              emailError: "Netword error",
+            });
+          } else {
+            return res.status(400).json({
+              error: err.code,
+            });
+          }
+        });
+    });
+};
