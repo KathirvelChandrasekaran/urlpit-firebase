@@ -1,5 +1,5 @@
 const isEmpty = (string) => {
-  if (string.trim() === '') return true;
+  if (string.trim() === "") return true;
   else return false;
 };
 
@@ -25,6 +25,25 @@ exports.validateSignup = (data) => {
     errors.confirmPassword =
       "Both password and confirm password should be same";
   if (isEmpty(data.userName)) errors.userName = "User name should not be empty";
+
+  return {
+    errors,
+    valid: Object.keys(errors).length === 0 ? true : false,
+  };
+};
+
+exports.validateSignin = (data) => {
+  let errors = {};
+
+  if (isEmpty(data.email)) {
+    errors.email = "Email field must not be empty";
+  } else if (!isEmail(data.email)) {
+    errors.email = "Not a valid email address. Try again with valid one!!!";
+  }
+
+  if (isEmpty(data.password)) {
+    errors.password = "Password field must not be empty";
+  }
 
   return {
     errors,

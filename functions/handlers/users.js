@@ -4,7 +4,10 @@ const config = require("../utils/config");
 const firebase = require("firebase");
 firebase.initializeApp(config);
 
-const { validateSignup } = require("../utils/userDetailsValidators");
+const {
+  validateSignup,
+  validateSignin,
+} = require("../utils/userDetailsValidators");
 
 exports.signup = (req, res) => {
   const newUser = {
@@ -66,5 +69,39 @@ exports.signup = (req, res) => {
           error: err.code,
         });
       }
+    });
+};
+
+exports.signin = (req, res) => {
+  const userDetails = {
+    email: req.body.email,
+    password: req.body.password,
+  };
+
+  const { valid, errors } = validateSignin(userDetails);
+  if (!valid) return res.status(400).json(errors);
+
+  firebase
+    .auth()
+    .signInWithEmailAndPassword(userDetails.email, userDetails.password)
+    .then((data) => {
+      return data.user.getIdToken();
+    })
+    .then((token) => {
+      return res.json({ token });
+    })
+    .catch((err) => {
+      if (err.code === "auth/wrong-password")
+        return res.status(400).json({
+          emailError: "Wrong password",
+        });
+      if (err.code === "auth/network-request-failed")
+        return res.status(400).json({
+          emailError: "Newtword error",
+        });
+      else
+        return res.status(400).json({
+          errors: err.code,
+        });
     });
 };
