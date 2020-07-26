@@ -45,6 +45,7 @@ exports.signup = (req, res) => {
         email: newUser.email,
         createdAt: new Date().toISOString(),
         userId,
+        verified: false,
       };
       return db.doc(`/users/${newUser.userName}`).set(userCredentials);
     })
@@ -97,11 +98,45 @@ exports.signin = (req, res) => {
         });
       if (err.code === "auth/network-request-failed")
         return res.status(400).json({
-          emailError: "Newtword error",
+          emailError: "Network error",
         });
       else
         return res.status(400).json({
           errors: err.code,
         });
+    });
+};
+
+exports.verifySignin = (req, res) => {
+  var user = firebase.auth().currentUser;
+  user
+    .sendEmailVerification()
+    .then(() => {
+      return res
+        .status(200)
+        .json({ message: "Verification mail has been sent" });
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        errors: err.code,
+      });
+    });
+};
+
+exports.resetPassword = (req, res) => {
+  var auth = firebase.auth();
+  var email = req.body.email;
+
+  auth
+    .sendPasswordResetEmail(email)
+    .then(() => {
+      return res
+        .status(200)
+        .json({ message: "Reset link has been sent to the email" });
+    })
+    .catch((err) => {
+      return res.status(400).json({
+        errors: err.code,
+      });
     });
 };
