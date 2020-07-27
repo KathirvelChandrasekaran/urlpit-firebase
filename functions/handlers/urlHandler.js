@@ -98,3 +98,34 @@ exports.deleteUrl = (req, res) => {
     });
   }
 };
+
+exports.searchTag = (req, res) => {
+  let searchData = [];
+  var searchTag = req.params.tagName;
+  if (req.params.userId === req.user.uid) {
+    db.collection("urlinfo")
+      .where("tag", "==", `#${searchTag}`)
+      .orderBy("createdAt", "desc")
+      .get()
+      .then((data) => {
+        data.forEach((doc) => {
+          searchData.push(doc.data());
+        });
+        if (searchData == '')
+          return res.json({
+            message: "No result found",
+          });
+        else return res.json(searchData);
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(400).json({
+          error: err.code,
+        });
+      });
+  } else {
+    return res.status(403).json({
+      error: "Invalid access",
+    });
+  }
+};
