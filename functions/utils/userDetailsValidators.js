@@ -1,11 +1,17 @@
-const isEmpty = (string) => {
-  if (string.trim() === "") return true;
+const isEmpty = (data) => {
+  if (data.trim() === "") return true;
   else return false;
 };
 
 const isEmail = (email) => {
   const regEx = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
   if (email.match(regEx)) return true;
+  else return false;
+};
+
+const isUrl = (data) => {
+  const regex = /(http(s)?:\/\/.)?(www\.)?[-a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*)/g;
+  if (data.match(regex)) return true;
   else return false;
 };
 
@@ -50,4 +56,13 @@ exports.validateSignin = (data) => {
     errors,
     valid: Object.keys(errors).length === 0 ? true : false,
   };
+};
+
+exports.validateUrl = (data) => {
+  let errors = {};
+
+  if (isEmpty(data.url)) errors.url = "URL must not be empty";
+  if (!isUrl(data.url)) errors.url = "Invalid URL";
+
+  return { errors, valid: Object.keys(errors).length === 0 ? true : false };
 };

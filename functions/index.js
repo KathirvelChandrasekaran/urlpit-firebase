@@ -13,6 +13,8 @@ const {
   uploadImage,
 } = require("./handlers/users");
 
+const { saveUrlInfo } = require("./handlers/urlHandler");
+
 const fireAuth = require("./utils/fireAuth");
 
 //User signUp and login
@@ -22,4 +24,8 @@ app.post("/signin/verify", verifySignin);
 app.post("/resetPassword", resetPassword);
 app.post("/user/image", fireAuth, uploadImage);
 // app.post("/signInWithGoogle", siginInWithGoogle);
+
+//URL Extract
+app.post("/user/saveURL", fireAuth, saveUrlInfo);
+
 exports.api = functions.https.onRequest(app);
