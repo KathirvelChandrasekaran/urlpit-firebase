@@ -1,6 +1,8 @@
 const { db, admin } = require("../utils/admin");
+const config = require("../utils/config");
 
-const { validateUrl } = require("../utils/userDetailsValidators");
+const { validateUrl } = require("../utils/detailsValidators");
+const e = require("express");
 
 exports.saveUrlInfo = (req, res) => {
   const userUrl = {
@@ -9,10 +11,18 @@ exports.saveUrlInfo = (req, res) => {
   const { valid, errors } = validateUrl(userUrl);
   if (!valid) return res.status(400).json(errors);
 
+  let dummyUrl;
+  if (req.body.image === "") {
+    dummyUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/dummyUrl.png?alt=media`;
+  } else {
+    dummyUrl = req.body.image;
+  }
+  console.log(dummyUrl);
+
   const urlInfo = {
     title: req.body.title,
     description: req.body.description,
-    image: req.body.image,
+    image: dummyUrl,
     createdAt: new Date().toISOString(),
     url: req.body.url,
     uid: req.user.uid,

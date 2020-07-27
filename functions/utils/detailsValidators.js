@@ -63,6 +63,6 @@ exports.validateUrl = (data) => {
 
   if (isEmpty(data.url)) errors.url = "URL must not be empty";
   if (!isUrl(data.url)) errors.url = "Invalid URL";
-
   return { errors, valid: Object.keys(errors).length === 0 ? true : false };
 };
+

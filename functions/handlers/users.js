@@ -7,7 +7,7 @@ firebase.initializeApp(config);
 const {
   validateSignup,
   validateSignin,
-} = require("../utils/userDetailsValidators");
+} = require("../utils/detailsValidators");
 
 const BusBoy = require("busboy");
 const os = require("os");
