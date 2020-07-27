@@ -13,7 +13,7 @@ const {
   uploadImage,
 } = require("./handlers/users");
 
-const { saveUrlInfo } = require("./handlers/urlHandler");
+const { saveUrlInfo, getAllUrl } = require("./handlers/urlHandler");
 
 const fireAuth = require("./utils/fireAuth");
 
@@ -27,5 +27,6 @@ app.post("/user/image", fireAuth, uploadImage);
 
 //URL Extract
 app.post("/user/saveURL", fireAuth, saveUrlInfo);
+app.get("/user/:userId/:urlId", fireAuth, getAllUrl);
 
 exports.api = functions.https.onRequest(app);
