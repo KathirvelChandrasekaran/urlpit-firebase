@@ -1,6 +1,6 @@
-const { db } = require("../utils/admin");
+const { db, admin } = require("../utils/admin");
 const config = require("../utils/config");
-
+const { uuid } = require("uuidv4");
 const firebase = require("firebase");
 firebase.initializeApp(config);
 
@@ -9,15 +9,31 @@ const {
   validateSignin,
 } = require("../utils/userDetailsValidators");
 
+const BusBoy = require("busboy");
+const os = require("os");
+const fs = require("fs");
+const path = require("path");
+
+let noImg;
+
 exports.signup = (req, res) => {
   const newUser = {
     userName: req.body.userName,
     email: req.body.email,
+    gender: req.body.gender,
     password: req.body.password,
     confirmPassword: req.body.confirmPassword,
   };
   const { valid, errors } = validateSignup(newUser);
   if (!valid) return res.status(400).json(errors);
+
+  if (newUser.gender === "male") {
+    noImg = "male-icon.png";
+  } else if (newUser.gender === "female") {
+    noImg = "female-icon.png";
+  } else {
+    noImg = "happiness.png";
+  }
 
   let token, userId;
   db.doc(`/users/${newUser.userName}`)
@@ -43,7 +59,9 @@ exports.signup = (req, res) => {
       const userCredentials = {
         userName: newUser.userName,
         email: newUser.email,
+        gender: newUser.gender,
         createdAt: new Date().toISOString(),
+        imageUrl: `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${noImg}?alt=media`,
         userId,
         verified: false,
       };
@@ -142,7 +160,7 @@ exports.resetPassword = (req, res) => {
 };
 
 exports.siginInWithGoogle = (req, res) => {
-  var provider = new firebase.auth.GoogleAuthProvider;
+  var provider = new firebase.auth.GoogleAuthProvider();
   let token, userId, userName, email, createdAt;
   firebase
     .auth()
@@ -182,4 +200,57 @@ exports.siginInWithGoogle = (req, res) => {
           }
         });
     });
+};
+
+exports.uploadImage = (req, res) => {
+  const busboy = new BusBoy({ headers: req.headers });
+
+  let imageFileName;
+  let imageToBeUploaded = {};
+
+  busboy.on("file", (fieldname, file, filename, encoding, mimetype) => {
+    if (mimetype !== "image/jpeg" && mimetype !== "image/png") {
+      return res.status(400).json({ error: "Wrong file type submitted" });
+    }
+    // my.image.png
+    const imageExtension = filename.split(".")[filename.split(".").length - 1];
+    // 645235423674523.png
+    imageFileName = `${Math.round(
+      Math.random() * 100000000000
+    )}.${imageExtension}`;
+    const filepath = path.join(os.tmpdir(), imageFileName);
+    imageToBeUploaded = { filepath, mimetype };
+    file.pipe(fs.createWriteStream(filepath));
+  });
+  busboy.on("finish", () => {
+    admin
+      .storage()
+      .bucket()
+      .upload(imageToBeUploaded.filepath, {
+        resumable: false,
+        metadata: {
+          metadata: {
+            contentType: imageToBeUploaded.mimetype,
+          },
+        },
+      })
+      .then(() => {
+        const imageUrl = `https://firebasestorage.googleapis.com/v0/b/${config.storageBucket}/o/${imageFileName}?alt=media`;
+        return db.doc(`/users/${req.user.userName}`).update({ imageUrl });
+      })
+      .then(() => {
+        return res.json({ message: "Image uploaded successfully" });
+      })
+      .catch((err) => {
+        // console.error(err);
+        if (err.code === "auth/argument-error")
+          return res.status(400).json({ error: "Access denied. Please login" });
+        if (err.code === "auth/network-request-failed") {
+          return res.status(400).json({
+            emailError: "Netword error",
+          });
+        } else return res.status(500).json({ error: err.code });
+      });
+  });
+  busboy.end(req.rawBody);
 };

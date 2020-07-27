@@ -26,6 +26,7 @@ exports.validateSignup = (data) => {
       "Both password and confirm password should be same";
   if (isEmpty(data.userName)) errors.userName = "User name should not be empty";
 
+  if (isEmpty(data.gender)) errors.gender = "Gender field must not be empty";
   return {
     errors,
     valid: Object.keys(errors).length === 0 ? true : false,
