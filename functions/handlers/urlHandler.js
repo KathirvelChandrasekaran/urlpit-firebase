@@ -67,3 +67,34 @@ exports.getAllUrl = (req, res) => {
     });
   }
 };
+
+exports.deleteUrl = (req, res) => {
+  if (req.params.userId === req.user.uid) {
+    const document = db.doc(`/urlinfo/${req.params.urlId}`);
+    document
+      .get()
+      .then((doc) => {
+        if (!doc.exists)
+          return res.status(404).json({
+            error: "Data not found",
+          });
+
+        document.delete();
+      })
+      .then(() => {
+        res.json({
+          message: "Data deleted successfully",
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+        return res.status(400).json({
+          error: err.code,
+        });
+      });
+  } else {
+    return res.status(403).json({
+      error: "Invalid access",
+    });
+  }
+};
