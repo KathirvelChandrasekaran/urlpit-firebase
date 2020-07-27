@@ -13,6 +13,7 @@ const BusBoy = require("busboy");
 const os = require("os");
 const fs = require("fs");
 const path = require("path");
+const { user } = require("firebase-functions/lib/providers/auth");
 
 let noImg;
 
@@ -36,7 +37,7 @@ exports.signup = (req, res) => {
   }
 
   let token, userId;
-  db.doc(`/users/${newUser.userName}`)
+  db.doc(`/users/${newUser.userId}`)
     .get()
     .then((doc) => {
       if (doc.exists) {
@@ -65,7 +66,7 @@ exports.signup = (req, res) => {
         userId,
         verified: false,
       };
-      return db.doc(`/users/${newUser.userName}`).set(userCredentials);
+      return db.doc(`/users/${userCredentials.userId}`).set(userCredentials);
     })
     .then(() => {
       return res.status(200).json({
@@ -157,6 +158,31 @@ exports.resetPassword = (req, res) => {
         errors: err.code,
       });
     });
+};
+
+exports.getUserInfo = (req, res) => {
+  let userData = [];
+  if (req.params.userId === req.user.uid) {
+    db.doc(`/users/${req.params.userId}`)
+      .get()
+      .then((doc) => {
+        if (doc.exists) {
+          userData.push(doc.data());
+        }
+
+        return res.json(userData);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.status(500).json({
+          error: err.code,
+        });
+      });
+  } else {
+    return res.status(403).json({
+      error: "Invalid access",
+    });
+  }
 };
 
 exports.siginInWithGoogle = (req, res) => {

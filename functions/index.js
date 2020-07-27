@@ -11,6 +11,7 @@ const {
   resetPassword,
   // siginInWithGoogle,
   uploadImage,
+  getUserInfo,
 } = require("./handlers/users");
 
 const { saveUrlInfo, getAllUrl, deleteUrl } = require("./handlers/urlHandler");
@@ -23,6 +24,7 @@ app.post("/signin", signin);
 app.post("/signin/verify", verifySignin);
 app.post("/resetPassword", resetPassword);
 app.post("/user/image", fireAuth, uploadImage);
+app.get("/user/:userId", fireAuth, getUserInfo);
 // app.post("/signInWithGoogle", siginInWithGoogle);
 
 //URL Extract
