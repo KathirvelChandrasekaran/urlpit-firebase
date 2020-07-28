@@ -19,6 +19,7 @@ const {
   getAllUrl,
   deleteUrl,
   searchTag,
+  archiveUrl,
 } = require("./handlers/urlHandler");
 
 const fireAuth = require("./utils/fireAuth");

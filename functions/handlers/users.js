@@ -105,10 +105,11 @@ exports.signin = (req, res) => {
     .auth()
     .signInWithEmailAndPassword(userDetails.email, userDetails.password)
     .then((data) => {
+      userId = data.user.uid;
       return data.user.getIdToken();
     })
     .then((token) => {
-      return res.json({ token });
+      return res.json({ token, userId });
     })
     .catch((err) => {
       if (err.code === "auth/wrong-password")
@@ -161,16 +162,15 @@ exports.resetPassword = (req, res) => {
 };
 
 exports.getUserInfo = (req, res) => {
-  let userData = [];
+  let userData = {};
   if (req.params.userId === req.user.uid) {
     db.doc(`/users/${req.params.userId}`)
       .get()
       .then((doc) => {
-        if (doc.exists) {
-          userData.push(doc.data());
+        if (!doc.exists) {
+          return res.json({ err: "User not found" });
         }
-
-        return res.json(userData);
+        return res.json(doc.data());
       })
       .catch((err) => {
         console.log(err);

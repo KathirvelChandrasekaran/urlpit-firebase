@@ -2,7 +2,6 @@ const { db, admin } = require("../utils/admin");
 const config = require("../utils/config");
 
 const { validateUrl } = require("../utils/detailsValidators");
-const e = require("express");
 
 exports.saveUrlInfo = (req, res) => {
   const userUrl = {
@@ -111,7 +110,7 @@ exports.searchTag = (req, res) => {
         data.forEach((doc) => {
           searchData.push(doc.data());
         });
-        if (searchData == '')
+        if (searchData == "")
           return res.json({
             message: "No result found",
           });
