@@ -120,7 +120,16 @@ exports.signin = (req, res) => {
         return res.status(400).json({
           emailError: "Network error",
         });
-      else
+      if (err.code === "auth/user-not-found") {
+        return res.status(400).json({
+          emailError: "User not found. Please signup.",
+        });
+      }
+      if (err.code === "auth/too-many-requests") {
+        return res.status(400).json({
+          emailError: "Too many requests. Please login later",
+        });
+      } else
         return res.status(400).json({
           errors: err.code,
         });
